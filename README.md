@@ -1,29 +1,48 @@
-# Create T3 App
+# Email and password example with 2FA in Next.js
 
-This is a [T3 Stack](https://create.t3.gg/) project bootstrapped with `create-t3-app`.
+Built with SQLite.
 
-## What's next? How do I make an app with this?
+- Password check with HaveIBeenPwned
+- Email verification
+- 2FA with TOTP
+- 2FA recovery codes
+- Password reset
+- Login throttling and rate limiting
 
-We try to keep this project as simple as possible, so you can start with just the scaffolding we set up for you, and add additional things later when they become necessary.
+Emails are just logged to the console. Rate limiting is implemented using JavaScript `Map`.
 
-If you are not familiar with the different technologies used in this project, please refer to the respective docs. If you still are in the wind, please join our [Discord](https://t3.gg/discord) and ask for help.
+## Initialize project
 
-- [Next.js](https://nextjs.org)
-- [NextAuth.js](https://next-auth.js.org)
-- [Prisma](https://prisma.io)
-- [Drizzle](https://orm.drizzle.team)
-- [Tailwind CSS](https://tailwindcss.com)
-- [tRPC](https://trpc.io)
+Create `sqlite.db` and run `setup.sql`.
 
-## Learn More
+```
+sqlite3 sqlite.db
+```
 
-To learn more about the [T3 Stack](https://create.t3.gg/), take a look at the following resources:
+Create a .env file. Generate a 128 bit (16 byte) string, base64 encode it, and set it as `ENCRYPTION_KEY`.
 
-- [Documentation](https://create.t3.gg/)
-- [Learn the T3 Stack](https://create.t3.gg/en/faq#what-learning-resources-are-currently-available) — Check out these awesome tutorials
+```bash
+ENCRYPTION_KEY="L9pmqRJnO1ZJSQ2svbHuBA=="
+```
 
-You can check out the [create-t3-app GitHub repository](https://github.com/t3-oss/create-t3-app) — your feedback and contributions are welcome!
+> You can use OpenSSL to quickly generate a secure key.
+>
+> ```bash
+> openssl rand --base64 16
+> ```
 
-## How do I deploy this?
+Install dependencies and run the application:
 
-Follow our deployment guides for [Vercel](https://create.t3.gg/en/deployment/vercel), [Netlify](https://create.t3.gg/en/deployment/netlify) and [Docker](https://create.t3.gg/en/deployment/docker) for more information.
+```
+pnpm i
+pnpm dev
+```
+
+## Notes
+
+- We do not consider user enumeration to be a real vulnerability so please don't open issues on it. If you really need to prevent it, just don't use emails.
+- This example does not handle unexpected errors gracefully.
+- There are some major code duplications (specifically for 2FA) to keep the codebase simple.
+- TODO: You may need to rewrite some queries and use transactions to avoid race conditions when using MySQL, Postgres, etc.
+- TODO: This project relies on the `X-Forwarded-For` header for getting the client's IP address.
+- TODO: Logging should be implemented.
