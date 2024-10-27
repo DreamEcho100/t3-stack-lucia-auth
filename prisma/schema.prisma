@@ -28,13 +28,16 @@ model Post {
 }
 
 model User {
-  id            String @id @default(cuid())
-  email         String @unique
-  username      String
+  id       String @id @default(cuid())
+  email    String @unique
+  username String
+
   passwordHash  String @map("password_hash")
   emailVerified Int    @default(0) @map("email_verified")
-  totpKey       Bytes? @map("totp_key")
-  recoveryCode  Bytes  @map("recovery_code")
+
+  isTwoFactorEnabled Int    @default(0) @map("is_two_factor_enabled")
+  totpKey            Bytes? @map("totp_key")
+  recoveryCode       Bytes  @map("recovery_code")
 
   sessions      Session[]
   emailRequests EmailVerificationRequest[]

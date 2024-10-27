@@ -20,10 +20,12 @@ export default async function AuthPasswordReset2FAVerificationPage() {
   if (!session.emailVerified) {
     return redirect("/auth/reset-password/verify-email");
   }
-  if (!user.registered2FA) {
-    return redirect("/auth/reset-password");
-  }
-  if (session.twoFactorVerified) {
+
+  if (
+    !user.isTwoFactorEnabled ||
+    !user.registered2FA ||
+    session.twoFactorVerified
+  ) {
     return redirect("/auth/reset-password");
   }
   return (

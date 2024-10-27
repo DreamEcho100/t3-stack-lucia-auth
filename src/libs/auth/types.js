@@ -11,7 +11,7 @@
 /**
  *
  * @typedef {User_} DBUser
- * @typedef {Omit<User_, 'emailVerified' | 'registered2FA' | 'passwordHash' | 'recoveryCode' | 'totpKey'> & { registered2FA: boolean; emailVerified: boolean }} User
+ * @typedef {Omit<User_, 'emailVerified' | 'registered2FA' | 'passwordHash' | 'recoveryCode' | 'totpKey' | 'isTwoFactorEnabled'> & { registered2FA: boolean; emailVerified: boolean; isTwoFactorEnabled: boolean; }} User
  * @typedef {Session_} DBSession
  * @typedef {Omit<Session_, 'expiresAt' | 'twoFactorVerified'> & { expiresAt: DateLike; twoFactorVerified: boolean; }} Session
  *

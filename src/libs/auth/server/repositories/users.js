@@ -232,3 +232,21 @@ export async function updateUserRecoveryCodeRepository(
         ),
     );
 }
+
+/**
+ * Update the user's two factor enabled status in the database.
+ * @param {string} userId
+ * @param {boolean} isTwoFactorEnabled
+ * @returns {Promise<User>}
+ */
+export async function updateUserTwoFactorEnabledRepository(
+  userId,
+  isTwoFactorEnabled,
+) {
+  return await db.user
+    .update({
+      where: { id: userId },
+      data: { isTwoFactorEnabled: isTwoFactorEnabled ? 1 : 0 },
+    })
+    .then(transformDbUserToUser);
+}

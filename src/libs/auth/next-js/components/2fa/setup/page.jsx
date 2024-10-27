@@ -14,6 +14,11 @@ export default async function AuthTwoFactorSetUpPage() {
   if (!user.emailVerified) {
     return redirect("/auth/verify-email");
   }
+
+  if (!user.isTwoFactorEnabled) {
+    return redirect("/");
+  }
+
   if (user.registered2FA && !session.twoFactorVerified) {
     return redirect("/auth/2fa");
   }

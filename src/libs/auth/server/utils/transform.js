@@ -19,6 +19,7 @@ export function transformDbUserToUser(dbUser) {
         ? dbUser.emailVerified === 1
         : !!dbUser.emailVerified,
     registered2FA: dbUser.registered2FA ?? !!dbUser.totpKey,
+    isTwoFactorEnabled: !!dbUser.isTwoFactorEnabled,
   };
 }
 

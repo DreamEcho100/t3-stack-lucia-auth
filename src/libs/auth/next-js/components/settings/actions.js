@@ -1,31 +1,6 @@
 "use server";
 
 import { cookies } from "next/headers";
-// import {
-//   verifyPasswordHash,
-//   verifyPasswordStrength,
-// } from "@/lib/server/password";
-// import { ExpiringTokenBucket } from "@/lib/server/rate-limit";
-// import {
-//   createSession,
-//   generateSessionToken,
-//   getCurrentSession,
-//   invalidateUserSessions,
-//   setSessionTokenCookie,
-// } from "@/lib/server/session";
-// import {
-//   getUserPasswordHash,
-//   resetUserRecoveryCode,
-//   updateUserPassword,
-// } from "@/lib/server/user";
-// import {
-//   createEmailVerificationRequest,
-//   sendVerificationEmail,
-//   sendVerificationEmailBucket,
-//   setEmailVerificationRequestCookie,
-// } from "@/lib/server/email-verification";
-// import { checkEmailAvailability, verifyEmailInput } from "@/lib/server/email";
-// import { globalPOSTRateLimit } from "@/lib/server/request";
 import { redirect } from "next/navigation";
 import { z } from "zod";
 import { getCurrentSession } from "~/libs/auth/next-js/utils/get-current-session";
@@ -33,6 +8,7 @@ import { invalidateUserSessionsRepository } from "~/libs/auth/server/repositorie
 import {
   getUserByEmailRepository,
   getUserPasswordHashRepository,
+  updateUserTwoFactorEnabledRepository,
 } from "~/libs/auth/server/repositories/users";
 import {
   createEmailVerificationRequest,
@@ -149,6 +125,7 @@ export async function updatePasswordAction(_prev, formData) {
     statusCode: 200,
   };
 }
+
 /**
  * @param {ActionResult} _prev
  * @param {FormData} formData
@@ -245,4 +222,57 @@ export async function regenerateRecoveryCodeAction() {
   const recoveryCode = await resetUserRecoveryCode(session.userId);
 
   return { error: null, recoveryCode };
+}
+
+/**
+ * @param {ActionResult} _prev
+ * @param {FormData} formData
+ * @returns {Promise<ActionResult>}
+ */
+export async function updateToggleIsTwoFactorEnabledAction(_prev, formData) {
+  const input = z
+    .object({
+      isTwoFactorEnabled: z.boolean(),
+    })
+    .safeParse(formData);
+
+  if (!input.success) {
+    return {
+      message: "Invalid or missing fields",
+      // messageCode: "INVALID_OR_MISSING_FIELDS",
+      type: "error",
+      statusCode: 400,
+    };
+  }
+
+  const { session, user } = await getCurrentSession();
+  if (session === null) {
+    return {
+      message: "Not authenticated",
+      // messageCode: "NOT_AUTHENTICATED",
+      type: "error",
+      statusCode: 401,
+    };
+  }
+
+  if (user.registered2FA && !session.twoFactorVerified) {
+    return {
+      message: "Forbidden",
+      // messageCode: "FORBIDDEN",
+      type: "error",
+      statusCode: 403,
+    };
+  }
+
+  await updateUserTwoFactorEnabledRepository(
+    user.id,
+    input.data.isTwoFactorEnabled,
+  );
+
+  return {
+    message: "Updated two-factor authentication",
+    // messageCode: "UPDATED_TWO_FACTOR_AUTHENTICATION",
+    type: "success",
+    statusCode: 200,
+  };
 }

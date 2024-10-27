@@ -7,6 +7,7 @@ import {
   regenerateRecoveryCodeAction,
   updateEmailAction,
   updatePasswordAction,
+  updateToggleIsTwoFactorEnabledAction,
 } from "./actions";
 import { useFormState } from "react-dom";
 
@@ -64,6 +65,29 @@ export function UpdateEmailForm() {
       <input type="email" id="form-email.email" name="email" required />
       <br />
       <button>Update</button>
+      <p>{state.message}</p>
+    </form>
+  );
+}
+
+/** @type {ActionResult} */
+const initialUpdateToggleIsTwoFactorEnabledState = {
+  type: "idle",
+};
+
+/** @param {{ isTwoFactorEnabled: boolean }} props */
+export function UpdateToggleIsTwoFactorEnabledForm(props) {
+  const [state, action] = useFormState(
+    updateToggleIsTwoFactorEnabledAction,
+    initialUpdateToggleIsTwoFactorEnabledState,
+  );
+
+  return (
+    <form action={action}>
+      <button>
+        Toggle two-factor authentication (currently{" "}
+        {props.isTwoFactorEnabled ? "enabled" : "disabled"})
+      </button>
       <p>{state.message}</p>
     </form>
   );

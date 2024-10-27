@@ -6,6 +6,7 @@ import { getCurrentSession } from "~/libs/auth/next-js/utils/get-current-session
 
 export default async function AuthLoginPage() {
   const { session, user } = await getCurrentSession();
+
   if (session !== null) {
     if (!user.emailVerified) {
       return redirect("/auth/verify-email");
@@ -18,6 +19,7 @@ export default async function AuthLoginPage() {
     }
     return redirect("/");
   }
+
   return (
     <>
       <h1>Sign in</h1>
