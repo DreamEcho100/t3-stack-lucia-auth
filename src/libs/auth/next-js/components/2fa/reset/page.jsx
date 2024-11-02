@@ -9,20 +9,21 @@ export default async function AuthTwoFactorResetPage() {
   if (session === null) {
     return redirect("/auth/login");
   }
-  if (!user.emailVerified) {
+
+  if (!user.isEmailVerified) {
     return redirect("/auth/verify-email");
   }
 
   if (!user.isTwoFactorEnabled) {
     return redirect("/");
   }
-
-  if (!user.registered2FA) {
+  if (!user.is2FARegistered) {
     return redirect("/auth/2fa/setup");
   }
-  if (session.twoFactorVerified) {
+  if (session.isTwoFactorVerified) {
     return redirect("/");
   }
+
   return (
     <>
       <h1>Recover your account</h1>

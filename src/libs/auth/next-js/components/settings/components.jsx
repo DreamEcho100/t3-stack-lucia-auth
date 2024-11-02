@@ -84,7 +84,10 @@ export function UpdateToggleIsTwoFactorEnabledForm(props) {
 
   return (
     <form action={action}>
-      <button>
+      <button
+        name="is_two_factor_enabled"
+        value={props.isTwoFactorEnabled ? "off" : "on"}
+      >
         Toggle two-factor authentication (currently{" "}
         {props.isTwoFactorEnabled ? "enabled" : "disabled"})
       </button>
@@ -103,8 +106,8 @@ export function RecoveryCodeSection(props) {
       <button
         onClick={async () => {
           const result = await regenerateRecoveryCodeAction();
-          if (result.recoveryCode !== null) {
-            setRecoveryCode(result.recoveryCode);
+          if (result.type === "success") {
+            setRecoveryCode(result.data.recoveryCode);
           }
         }}
       >

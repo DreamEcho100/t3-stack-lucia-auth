@@ -17,17 +17,19 @@ export default async function AuthPasswordReset2FAVerificationPage() {
   if (session === null) {
     return redirect("/auth/forgot-password");
   }
-  if (!session.emailVerified) {
+
+  if (!session.isEmailVerified) {
     return redirect("/auth/reset-password/verify-email");
   }
 
   if (
     !user.isTwoFactorEnabled ||
-    !user.registered2FA ||
-    session.twoFactorVerified
+    !user.is2FARegistered ||
+    session.isTwoFactorVerified
   ) {
     return redirect("/auth/reset-password");
   }
+
   return (
     <>
       <h1>Two-factor authentication</h1>

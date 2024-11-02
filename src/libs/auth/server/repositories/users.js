@@ -25,7 +25,7 @@ export async function createUserRepository(
         username,
         passwordHash,
         recoveryCode: Buffer.from(encryptedRecoveryCode),
-        emailVerified: 0, // Default value as unverified
+        isEmailVerified: 0, // Default value as unverified
       },
     })
     .then(transformDbUserToUser);
@@ -59,7 +59,7 @@ export async function updateUserEmailAndSetEmailAsVerifiedRepository(
   return await db.user
     .update({
       where: { id: userId },
-      data: { email, emailVerified: 1 }, // Mark email as verified
+      data: { email, isEmailVerified: 1 }, // Mark email as verified
     })
     .then(transformDbUserToUser);
 }
@@ -135,7 +135,7 @@ export async function updateUserTOTPKeyRepository(userId, encryptedKey) {
  * @param {Uint8Array} encryptedRecoveryCode
  * @returns {Promise<User>}
  */
-export async function resetUserRecoveryCodeRepository(
+export async function updateOneUserRecoveryCodeRepository(
   userId,
   encryptedRecoveryCode,
 ) {
@@ -160,7 +160,7 @@ export async function setUserAsEmailVerifiedIfEmailMatchesRepository(
   return await db.user
     .update({
       where: { id: userId, email },
-      data: { emailVerified: 1 }, // Mark email as verified
+      data: { isEmailVerified: 1 }, // Mark email as verified
     })
     .then(transformDbUserToUser);
 }
@@ -234,19 +234,24 @@ export async function updateUserRecoveryCodeRepository(
 }
 
 /**
- * Update the user's two factor enabled status in the database.
- * @param {string} userId
- * @param {boolean} isTwoFactorEnabled
+ * Update the user's two factor enabled status in the database and optionally set the recovery code.
+ *
+ * @param {{
+ *  isTwoFactorEnabled: boolean;
+ *  recoveryCode?: Uint8Array | null;
+ * }} data
+ * @param {{ userId: string; }} where
  * @returns {Promise<User>}
  */
-export async function updateUserTwoFactorEnabledRepository(
-  userId,
-  isTwoFactorEnabled,
-) {
+export async function updateUserTwoFactorEnabledRepository(data, where) {
   return await db.user
     .update({
-      where: { id: userId },
-      data: { isTwoFactorEnabled: isTwoFactorEnabled ? 1 : 0 },
+      where: { id: where.userId },
+      data: {
+        isTwoFactorEnabled: data.isTwoFactorEnabled ? 1 : 0,
+        recoveryCode: data.recoveryCode && Buffer.from(data.recoveryCode),
+        totpKey: !data.isTwoFactorEnabled ? null : undefined,
+      },
     })
     .then(transformDbUserToUser);
 }

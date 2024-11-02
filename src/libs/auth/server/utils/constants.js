@@ -24,10 +24,10 @@ export const LOGIN_MESSAGES_ERRORS = /** @type {const} */ ({
     code: "TWO_FA_NOT_SETUP",
     statusCode: 403, // Forbidden: Two-factor authentication not set up
   },
-  // TWO_FA_NOT_VERIFIED: {
-  //   code: "TWO_FA_NOT_VERIFIED",
-  //   statusCode: 401, // Unauthorized: Two-factor authentication not completed
-  // },
+  TWO_FA_NOT_NEEDS_VERIFICATION: {
+    code: "TWO_FA_NOT_NEEDS_VERIFICATION",
+    statusCode: 403, // Forbidden: Two-factor authentication not needs verification
+  },
   USER_DOES_NOT_EXIST_OR_PASSWORD_NOT_SET: {
     code: "USER_DOES_NOT_EXIST_OR_PASSWORD_NOT_SET",
     statusCode: 404, // Not Found: User does not exist or password not set
@@ -109,9 +109,9 @@ export const VERIFY_EMAIL_MESSAGES_SUCCESS = /** @type {const} */ ({
 export const AUTH_URLS = /** @type {const} */ ({
   VERIFY_EMAIL: "/auth/verify-email",
   SETUP_2FA: "/auth/2fa/setup",
-  // TWO_FA: "/auth/2fa",
-  SUCCESS_LOGIN: "/auth/2fa",
-  SUCCESS_VERIFY_EMAIL: "/",
+  TWO_FA: "/auth/2fa",
   REGISTER: "/auth/signup",
   LOGIN: "/auth/login",
+  SUCCESS_LOGIN: "/",
+  SUCCESS_VERIFY_EMAIL: "/",
 });

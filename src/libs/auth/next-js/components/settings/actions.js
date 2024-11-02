@@ -8,7 +8,6 @@ import { invalidateUserSessionsRepository } from "~/libs/auth/server/repositorie
 import {
   getUserByEmailRepository,
   getUserPasswordHashRepository,
-  updateUserTwoFactorEnabledRepository,
 } from "~/libs/auth/server/repositories/users";
 import {
   createEmailVerificationRequest,
@@ -27,6 +26,7 @@ import {
 import {
   resetUserRecoveryCode,
   updateUserPassword,
+  updateUserTwoFactorEnabledService,
 } from "~/libs/auth/server/utils/users";
 
 // import type { SessionFlags } from "@/lib/server/session";
@@ -34,7 +34,10 @@ import {
 // const passwordUpdateBucket = new ExpiringTokenBucket<string>(5, 60 * 30);
 
 /**
- * @typedef {{ type: 'idle'; statusCode?: number; message?: string; } | { type: 'error' | 'success'; statusCode: number; message: string; }} ActionResult
+ * @typedef {{ type: 'idle'; statusCode?: number; message?: string; }} ActionIdleResult
+ * @typedef {{ type: 'error', statusCode: number; message: string; }} ActionErrorResult
+ * @typedef {{ type: 'success', statusCode: number; message: string; }} ActionSuccessResult
+ * @typedef {ActionIdleResult | ActionErrorResult | ActionSuccessResult} ActionResult
  */
 
 /**
@@ -52,7 +55,11 @@ export async function updatePasswordAction(_prev, formData) {
       statusCode: 401,
     };
   }
-  if (user.registered2FA && !session.twoFactorVerified) {
+  if (
+    user.isTwoFactorEnabled &&
+    user.is2FARegistered &&
+    !session.isTwoFactorVerified
+  ) {
     return {
       message: "Forbidden",
       // messageCode: "FORBIDDEN",
@@ -109,7 +116,7 @@ export async function updatePasswordAction(_prev, formData) {
 
   const sessionToken = generateSessionToken();
   const newSession = await createSession(sessionToken, user.id, {
-    twoFactorVerified: session.twoFactorVerified,
+    isTwoFactorVerified: session.isTwoFactorVerified,
   });
   const cookiesManager = cookies();
   setSessionTokenCookie({
@@ -156,7 +163,11 @@ export async function updateEmailAction(_prev, formData) {
       statusCode: 401,
     };
   }
-  if (user.registered2FA && !session.twoFactorVerified) {
+  if (
+    user.isTwoFactorEnabled &&
+    user.is2FARegistered &&
+    !session.isTwoFactorVerified
+  ) {
     return {
       message: "Forbidden",
       // messageCode: "FORBIDDEN",
@@ -192,36 +203,63 @@ export async function updateEmailAction(_prev, formData) {
 }
 
 /**
- * @typedef {{ error: string; recoveryCode: null; } | { error: null; recoveryCode: string; }} RegenerateRecoveryCodeActionResult
- *
- * @returns {Promise<RegenerateRecoveryCodeActionResult>}
+ * @returns {Promise<ActionIdleResult | ActionErrorResult | (ActionSuccessResult & { data: { recoveryCode: string; } })>}
  */
 export async function regenerateRecoveryCodeAction() {
   const { session, user } = await getCurrentSession();
   if (session === null || user === null) {
     return {
-      error: "Not authenticated",
-      recoveryCode: null,
+      // error: "Not authenticated",
+      // recoveryCode: null,
+      type: "error",
+      message: "Not authenticated",
+      // messageCode: "NOT_AUTHENTICATED",
+      statusCode: 401,
     };
   }
 
-  if (!user.emailVerified) {
+  if (!user.isEmailVerified) {
     return {
-      error: "Forbidden",
-      recoveryCode: null,
+      // error: "Forbidden",
+      // recoveryCode: null,
+      type: "error",
+      message: "Forbidden",
+      // messageCode: "FORBIDDEN",
+      statusCode: 403,
     };
   }
 
-  if (!session.twoFactorVerified) {
+  if (!user.isTwoFactorEnabled) {
     return {
-      error: "Forbidden",
-      recoveryCode: null,
+      // error: "Forbidden",
+      // recoveryCode: null,
+      type: "error",
+      message: "Forbidden",
+      // messageCode: "FORBIDDEN",
+      statusCode: 403,
+    };
+  }
+
+  if (!session.isTwoFactorVerified) {
+    return {
+      // error: "Forbidden",
+      // recoveryCode: null,
+      type: "error",
+      message: "Forbidden",
+      // messageCode: "FORBIDDEN",
+      statusCode: 403,
     };
   }
 
   const recoveryCode = await resetUserRecoveryCode(session.userId);
 
-  return { error: null, recoveryCode };
+  return {
+    type: "success",
+    message: "Regenerated recovery code",
+    // messageCode: "REGENERATED_RECOVERY_CODE",
+    statusCode: 200,
+    data: { recoveryCode },
+  };
 }
 
 /**
@@ -232,9 +270,17 @@ export async function regenerateRecoveryCodeAction() {
 export async function updateToggleIsTwoFactorEnabledAction(_prev, formData) {
   const input = z
     .object({
-      isTwoFactorEnabled: z.boolean(),
+      isTwoFactorEnabled: z.preprocess((value) => {
+        if (typeof value === "boolean") {
+          return value;
+        }
+
+        return value === "on";
+      }, z.boolean().optional().default(false)),
     })
-    .safeParse(formData);
+    .safeParse({
+      isTwoFactorEnabled: formData.get("is_two_factor_enabled") === "on",
+    });
 
   if (!input.success) {
     return {
@@ -255,24 +301,17 @@ export async function updateToggleIsTwoFactorEnabledAction(_prev, formData) {
     };
   }
 
-  if (user.registered2FA && !session.twoFactorVerified) {
-    return {
-      message: "Forbidden",
-      // messageCode: "FORBIDDEN",
-      type: "error",
-      statusCode: 403,
-    };
-  }
-
-  await updateUserTwoFactorEnabledRepository(
+  await updateUserTwoFactorEnabledService(
     user.id,
     input.data.isTwoFactorEnabled,
   );
 
-  return {
-    message: "Updated two-factor authentication",
-    // messageCode: "UPDATED_TWO_FACTOR_AUTHENTICATION",
-    type: "success",
-    statusCode: 200,
-  };
+  // return {
+  //   message: "Updated two-factor authentication",
+  //   // messageCode: "UPDATED_TWO_FACTOR_AUTHENTICATION",
+  //   type: "success",
+  //   statusCode: 200,
+  // };
+
+  return redirect("/auth/2fa");
 }

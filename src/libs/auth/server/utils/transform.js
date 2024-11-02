@@ -6,7 +6,7 @@ import { dateLikeToDate } from "./dates";
 
 /**
  * Transform a database user to a session user.
- * @param {Omit<DBUser, 'emailVerified'|'passwordHash'|'recoveryCode'> & Partial<Pick<DBUser, 'passwordHash'|'recoveryCode'>> & { registered2FA?: boolean; emailVerified: DBUser['emailVerified'] | boolean }} dbUser
+ * @param {Omit<DBUser, 'isEmailVerified'|'passwordHash'|'recoveryCode'> & Partial<Pick<DBUser, 'passwordHash'|'recoveryCode'>> & { is2FARegistered?: boolean; isEmailVerified: DBUser['isEmailVerified'] | boolean }} dbUser
  * @returns {User}
  */
 export function transformDbUserToUser(dbUser) {
@@ -14,12 +14,14 @@ export function transformDbUserToUser(dbUser) {
     id: dbUser.id,
     username: dbUser.username,
     email: dbUser.email,
-    emailVerified:
-      typeof dbUser.emailVerified === "number"
-        ? dbUser.emailVerified === 1
-        : !!dbUser.emailVerified,
-    registered2FA: dbUser.registered2FA ?? !!dbUser.totpKey,
+    isEmailVerified:
+      typeof dbUser.isEmailVerified === "number"
+        ? dbUser.isEmailVerified === 1
+        : !!dbUser.isEmailVerified,
+    is2FARegistered: dbUser.is2FARegistered ?? !!dbUser.totpKey,
     isTwoFactorEnabled: !!dbUser.isTwoFactorEnabled,
+    createdAt: dateLikeToDate(dbUser.createdAt),
+    updatedAt: dbUser.updatedAt,
   };
 }
 
@@ -32,8 +34,9 @@ export function transformDbSessionToSession(dbSession) {
   return {
     id: dbSession.id,
     userId: dbSession.userId,
-    twoFactorVerified: dbSession.twoFactorVerified === 1,
+    isTwoFactorVerified: dbSession.isTwoFactorVerified === 1,
     expiresAt: dateLikeToDate(dbSession.expiresAt * 1000),
+    createdAt: dateLikeToDate(dbSession.createdAt),
   };
 }
 
@@ -51,6 +54,7 @@ export function transformDbEmailVerificationRequestToEmailVerificationRequest(
     code: dbEmailVerificationRequest.code,
     userId: dbEmailVerificationRequest.userId,
     expiresAt: dateLikeToDate(dbEmailVerificationRequest.expiresAt * 1000),
+    createdAt: dateLikeToDate(dbEmailVerificationRequest.createdAt),
   };
 }
 
@@ -65,10 +69,11 @@ export function transformDbPasswordResetSessionToPasswordResetSession(
   return {
     id: dbPasswordResetSession.id,
     userId: dbPasswordResetSession.userId,
-    emailVerified: dbPasswordResetSession.emailVerified === 1,
-    twoFactorVerified: dbPasswordResetSession.twoFactorVerified === 1,
+    isEmailVerified: dbPasswordResetSession.isEmailVerified === 1,
+    isTwoFactorVerified: dbPasswordResetSession.isTwoFactorVerified === 1,
     expiresAt: dateLikeToDate(dbPasswordResetSession.expiresAt * 1000),
     code: dbPasswordResetSession.code,
     email: dbPasswordResetSession.email,
+    createdAt: dateLikeToDate(dbPasswordResetSession.createdAt),
   };
 }

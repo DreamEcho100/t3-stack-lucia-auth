@@ -8,14 +8,16 @@ export default async function AuthLoginPage() {
   const { session, user } = await getCurrentSession();
 
   if (session !== null) {
-    if (!user.emailVerified) {
+    if (!user.isEmailVerified) {
       return redirect("/auth/verify-email");
     }
-    if (!user.registered2FA) {
-      return redirect("/auth/2fa/setup");
-    }
-    if (!session.twoFactorVerified) {
-      return redirect("/auth/2fa");
+    if (user.isTwoFactorEnabled) {
+      if (!user.is2FARegistered) {
+        return redirect("/auth/2fa/setup");
+      }
+      if (!session.isTwoFactorVerified) {
+        return redirect("/auth/2fa");
+      }
     }
     return redirect("/");
   }

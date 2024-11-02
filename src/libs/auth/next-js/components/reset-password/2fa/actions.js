@@ -32,10 +32,20 @@ export async function verifyPasswordReset2FAWithTOTPAction(_prev, formData) {
       statusCode: 401,
     };
   }
+
+  if (!user.isTwoFactorEnabled) {
+    return {
+      message: "Forbidden, 2FA is not enabled",
+      // messageCode: "FORBIDDEN",
+      statusCode: 403,
+      type: "error",
+    };
+  }
+
   if (
-    !session.emailVerified ||
-    !user.registered2FA ||
-    session.twoFactorVerified
+    !session.isEmailVerified ||
+    !user.is2FARegistered ||
+    session.isTwoFactorVerified
   ) {
     return {
       message: "Forbidden",
@@ -129,10 +139,20 @@ export async function verifyPasswordReset2FAWithRecoveryCodeAction(
       statusCode: 401,
     };
   }
+
+  if (!user.isTwoFactorEnabled) {
+    return {
+      message: "Forbidden, 2FA is not enabled",
+      // messageCode: "FORBIDDEN",
+      statusCode: 403,
+      type: "error",
+    };
+  }
+
   if (
-    !session.emailVerified ||
-    !user.registered2FA ||
-    session.twoFactorVerified
+    !session.isEmailVerified ||
+    !user.is2FARegistered ||
+    session.isTwoFactorVerified
   ) {
     return {
       message: "Forbidden",

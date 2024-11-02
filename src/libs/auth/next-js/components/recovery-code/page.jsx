@@ -10,13 +10,18 @@ export default async function AuthRecoveryCodePage() {
   if (session === null) {
     return redirect("/auth/login");
   }
-  if (!user.emailVerified) {
+
+  if (!user.isEmailVerified) {
     return redirect("/auth/verify-email");
   }
-  if (!user.registered2FA) {
+
+  if (!user.isTwoFactorEnabled) {
+    return redirect("/");
+  }
+  if (!user.is2FARegistered) {
     return redirect("/auth/2fa/setup");
   }
-  if (!session.twoFactorVerified) {
+  if (!session.isTwoFactorVerified) {
     return redirect("/auth/2fa");
   }
   const recoveryCode = await getUserRecoveryCodeRepository(user.id);

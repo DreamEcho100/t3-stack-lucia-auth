@@ -28,16 +28,19 @@ model Post {
 }
 
 model User {
-  id       String @id @default(cuid())
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
   email    String @unique
   username String
 
-  passwordHash  String @map("password_hash")
-  emailVerified Int    @default(0) @map("email_verified")
+  passwordHash String @map("password_hash")
 
-  isTwoFactorEnabled Int    @default(0) @map("is_two_factor_enabled")
-  totpKey            Bytes? @map("totp_key")
-  recoveryCode       Bytes  @map("recovery_code")
+  isEmailVerified    Int    @default(0) @map("is_is_email_verified") // Is the email verified
+  isTwoFactorEnabled Int    @default(0) @map("is_two_factor_enabled") // Is two-factor authentication enabled
+  totpKey            Bytes? @map("totp_key") // TOTP key for two-factor authentication
+  recoveryCode       Bytes? @map("recovery_code") // Recovery code for two-factor authentication
 
   sessions      Session[]
   emailRequests EmailVerificationRequest[]
@@ -49,19 +52,24 @@ model User {
 }
 
 model Session {
-  id                String @id
-  userId            String @map("user_id")
-  user              User   @relation(fields: [userId], references: [id])
-  expiresAt         Int    @map("expires_at")
-  twoFactorVerified Int    @default(0) @map("two_factor_verified")
+  id        String   @id
+  createdAt DateTime @default(now()) @map("created_at")
+
+  userId              String @map("user_id")
+  user                User   @relation(fields: [userId], references: [id])
+  expiresAt           Int    @map("expires_at")
+  isTwoFactorVerified Int    @default(0) @map("is_two_factor_verified")
 
   @@map("session")
 }
 
 model EmailVerificationRequest {
-  id        String @id
-  userId    String
-  user      User   @relation(fields: [userId], references: [id])
+  id        String   @id
+  createdAt DateTime @default(now()) @map("created_at")
+
+  userId String @map("user_id")
+  user   User   @relation(fields: [userId], references: [id])
+
   email     String
   code      String
   expiresAt Int    @map("expires_at")
@@ -70,14 +78,17 @@ model EmailVerificationRequest {
 }
 
 model PasswordResetSession {
-  id                String @id
-  userId            String
-  user              User   @relation(fields: [userId], references: [id])
-  email             String
-  code              String
-  expiresAt         Int    @map("expires_at")
-  emailVerified     Int    @default(0) @map("email_verified")
-  twoFactorVerified Int    @default(0) @map("two_factor_verified")
+  id        String   @id
+  createdAt DateTime @default(now()) @map("created_at")
+
+  userId String @map("user_id")
+  user   User   @relation(fields: [userId], references: [id])
+
+  email               String
+  code                String
+  expiresAt           Int    @map("expires_at")
+  isEmailVerified     Int    @default(0) @map("is_email_verified")
+  isTwoFactorVerified Int    @default(0) @map("is_two_factor_verified")
 
   @@map("password_reset_session")
 }

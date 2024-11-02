@@ -85,7 +85,7 @@ export async function loginUserService(data, options) {
 
   const sessionToken = generateSessionToken();
   const session = await createSession(sessionToken, user.id, {
-    twoFactorVerified: false,
+    isTwoFactorVerified: false,
   });
   setSessionTokenCookie({
     setCookie: options.setCookie,
@@ -93,7 +93,7 @@ export async function loginUserService(data, options) {
     token: sessionToken,
   });
 
-  if (!user.emailVerified) {
+  if (!user.isEmailVerified) {
     // return redirect("/auth/verify-email");
     return {
       type: "error",
@@ -103,7 +103,7 @@ export async function loginUserService(data, options) {
     };
   }
 
-  if (!user.registered2FA) {
+  if (user.isTwoFactorEnabled && !user.is2FARegistered) {
     return {
       type: "error",
       statusCode: LOGIN_MESSAGES_ERRORS.TWO_FA_NOT_SETUP.statusCode,
@@ -112,14 +112,15 @@ export async function loginUserService(data, options) {
     };
   }
 
-  // if (!session.twoFactorVerified) {
-  //   return {
-  //     status: "error",
-  //     statusCode: LOGIN_MESSAGES_ERRORS.TWO_FA_NOT_VERIFIED.statusCode,
-  //     message: "2FA not verified",
-  //     messageCode: LOGIN_MESSAGES_ERRORS.TWO_FA_NOT_VERIFIED.code,
-  //   };
-  // }
+  if (user.isTwoFactorEnabled) {
+    return {
+      type: "error",
+      statusCode:
+        LOGIN_MESSAGES_ERRORS.TWO_FA_NOT_NEEDS_VERIFICATION.statusCode,
+      message: "2FA not verified",
+      messageCode: LOGIN_MESSAGES_ERRORS.TWO_FA_NOT_NEEDS_VERIFICATION.code,
+    };
+  }
 
   return {
     type: "success",

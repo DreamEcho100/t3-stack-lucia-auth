@@ -59,7 +59,7 @@ export function deleteSessionTokenCookie(setCookie) {
  *
  * @param {string} token - The session token, which is a random string.
  * @param {string} userId - The ID of the user for whom the session is created.
- * @param {{ twoFactorVerified: boolean; }} flags - Flags to set for the session.
+ * @param {{ isTwoFactorVerified: boolean; }} flags - Flags to set for the session.
  * @returns {Promise<Session>} A promise that resolves to the created session object.
  */
 export async function createSession(token, userId, flags) {
@@ -69,8 +69,9 @@ export async function createSession(token, userId, flags) {
     id: sessionId,
     userId,
     expiresAt: new Date(Date.now() + COOKIE_TOKEN_SESSION_EXPIRES_DURATION),
-    // twoFactorVerified: 0,
-    twoFactorVerified: flags.twoFactorVerified,
+    // isTwoFactorVerified: 0,
+    isTwoFactorVerified: flags.isTwoFactorVerified,
+    createdAt: new Date(),
   };
 
   await createOneSessionRepository(session);

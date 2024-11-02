@@ -4,6 +4,7 @@ import {
   RecoveryCodeSection,
   UpdateEmailForm,
   UpdatePasswordForm,
+  UpdateToggleIsTwoFactorEnabledForm,
 } from "./components";
 import { redirect } from "next/navigation";
 import { getCurrentSession } from "~/libs/auth/next-js/utils/get-current-session";
@@ -15,15 +16,20 @@ export default async function AuthSettingsPage() {
   if (session === null) {
     return redirect("/auth/login");
   }
-  if (user.registered2FA && !session.twoFactorVerified) {
+  if (
+    user.isTwoFactorEnabled &&
+    user.is2FARegistered &&
+    !session.isTwoFactorVerified
+  ) {
     return redirect("/auth/2fa");
   }
 
   /** @type {string | null} */
   let recoveryCode = null;
-  if (user.registered2FA) {
+  if (user.is2FARegistered) {
     recoveryCode = await getUserRecoveryCodeRepository(user.id);
   }
+
   return (
     <>
       <header>
@@ -41,15 +47,19 @@ export default async function AuthSettingsPage() {
           <h2>Update password</h2>
           <UpdatePasswordForm />
         </section>
-        {user.registered2FA && (
+
+        {user.is2FARegistered && (
           <section>
             <h2>Update two-factor authentication</h2>
             <Link href="/auth/2fa/setup">Update</Link>
           </section>
         )}
-        {recoveryCode !== null && (
-          <RecoveryCodeSection recoveryCode={recoveryCode} />
-        )}
+
+        {recoveryCode && <RecoveryCodeSection recoveryCode={recoveryCode} />}
+
+        <UpdateToggleIsTwoFactorEnabledForm
+          isTwoFactorEnabled={user.isTwoFactorEnabled}
+        />
       </main>
     </>
   );

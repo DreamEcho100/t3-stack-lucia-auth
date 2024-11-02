@@ -22,7 +22,7 @@ export default async function AuthVerifyEmailPage() {
     (name) => cookies().get(name)?.value,
     cookies().set,
   );
-  if (verificationRequest === null && user.emailVerified) {
+  if (verificationRequest === null && user.isEmailVerified) {
     return redirect("/");
   }
   return (

@@ -42,7 +42,21 @@ export async function reset2FAAction(_prev, formData) {
       statusCode: 401,
     };
   }
-  if (!user.emailVerified || !user.registered2FA || session.twoFactorVerified) {
+
+  if (!user.isTwoFactorEnabled) {
+    return {
+      message: "Forbidden, 2FA is not enabled",
+      // messageCode: "FORBIDDEN",
+      statusCode: 403,
+      type: "error",
+    };
+  }
+
+  if (
+    !user.isEmailVerified ||
+    !user.is2FARegistered ||
+    session.isTwoFactorVerified
+  ) {
     return {
       message: "Forbidden",
       // messageCode: "FORBIDDEN",

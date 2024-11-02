@@ -11,9 +11,32 @@
 /**
  *
  * @typedef {User_} DBUser
- * @typedef {Omit<User_, 'emailVerified' | 'registered2FA' | 'passwordHash' | 'recoveryCode' | 'totpKey' | 'isTwoFactorEnabled'> & { registered2FA: boolean; emailVerified: boolean; isTwoFactorEnabled: boolean; }} User
+ * @typedef {Omit<
+ * 	 User_,
+ * 	 | 'isEmailVerified'
+ * 	 | 'is2FARegistered'
+ * 	 | 'passwordHash'
+ * 	 | 'recoveryCode'
+ * 	 | 'totpKey'
+ * 	 | 'isTwoFactorEnabled'
+ * 	 | 'createdAt'
+ * 	 | 'updatedAt'
+ * 	> & {
+ * 	 is2FARegistered: boolean;
+ * 	 isEmailVerified: boolean;
+ * 	 isTwoFactorEnabled: boolean;
+ * 	 createdAt: DateLike;
+ * 	 updatedAt?: DateLike | null;
+ * }} User
  * @typedef {Session_} DBSession
- * @typedef {Omit<Session_, 'expiresAt' | 'twoFactorVerified'> & { expiresAt: DateLike; twoFactorVerified: boolean; }} Session
+ * @typedef {Omit<
+ * 		Session_,
+ * 		| 'expiresAt'
+ * 		| 'isTwoFactorVerified'
+ * > & {
+ * 	expiresAt: DateLike;
+ * 	isTwoFactorVerified: boolean;
+ * }} Session
  *
  * @typedef {{ session: Session; user: User }} ValidSessionResult
  * @typedef {{ session: null; user: null }} InvalidSessionResult
@@ -27,7 +50,17 @@
 
 /**
  * @typedef {PasswordResetSession_} DBPasswordResetSession
- * @typedef {Omit<PasswordResetSession_, 'expiresAt' | 'emailVerified' | 'twoFactorVerified'> & { expiresAt: DateLike; emailVerified: boolean; twoFactorVerified: boolean; }} PasswordResetSession
+ * @typedef {Omit<
+ * 	PasswordResetSession_,
+ * 	| 'expiresAt'
+ * 	| 'isEmailVerified'
+ * 	| 'isTwoFactorVerified'
+ * > & {
+ *  expiresAt: DateLike;
+ *  isEmailVerified: boolean;
+ *  isTwoFactorVerified: boolean;
+ *  createdAt: DateLike;
+ * }} PasswordResetSession
  *
  * @typedef {{ session: PasswordResetSession; user: User }} PasswordResetSessionValidationSuccessResult
  * @typedef {{ session: null; user: null }} PasswordResetSessionValidationFailureResult

@@ -16,8 +16,8 @@ export async function createOnePasswordResetSessionRepository(data) {
     .create({
       data: {
         ...data,
-        emailVerified: data.emailVerified ? 1 : 0,
-        twoFactorVerified: data.twoFactorVerified ? 1 : 0,
+        isEmailVerified: data.isEmailVerified ? 1 : 0,
+        isTwoFactorVerified: data.isTwoFactorVerified ? 1 : 0,
         expiresAt: Math.floor(dateLikeToNumber(data.expiresAt) / 1000),
       },
     })
@@ -63,7 +63,7 @@ export async function updateOnePasswordResetSessionAsEmailVerifiedRepository(
 ) {
   await db.passwordResetSession.update({
     where: { id: sessionId },
-    data: { emailVerified: 1 },
+    data: { isEmailVerified: 1 },
   });
 }
 
@@ -76,7 +76,7 @@ export async function updateOnePasswordResetSessionAs2FAVerifiedRepository(
 ) {
   await db.passwordResetSession.update({
     where: { id: sessionId },
-    data: { twoFactorVerified: 1 },
+    data: { isTwoFactorVerified: 1 },
   });
 }
 

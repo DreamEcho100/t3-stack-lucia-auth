@@ -14,15 +14,15 @@ export default async function AuthPasswordResetPage() {
   if (session === null) {
     return redirect("/auth/forgot-password");
   }
-  if (!session.emailVerified) {
+  if (!session.isEmailVerified) {
     return redirect("/auth/reset-password/verify-email");
   }
 
-  const shouldRedirectTo2FA =
-    !user.isTwoFactorEnabled ||
-    (user.registered2FA && !session.twoFactorVerified);
-
-  if (shouldRedirectTo2FA) {
+  if (
+    user.isTwoFactorEnabled &&
+    user.is2FARegistered &&
+    !session.isTwoFactorVerified
+  ) {
     return redirect("/auth/reset-password/2fa");
   }
 

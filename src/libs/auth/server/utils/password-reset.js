@@ -2,10 +2,8 @@
 
 import { encodeHexLowerCase } from "@oslojs/encoding";
 import { sha256 } from "@oslojs/crypto/sha2";
-// import { cookies } from "next/headers";
 
 import { generateRandomOTP } from "./generate-randomotp";
-// import { db } from "~/server/db";
 import { dateLikeToDate, dateLikeToNumber } from "./dates";
 import {
   COOKIE_TOKEN_PASSWORD_RESET_EXPIRES_DURATION,
@@ -13,11 +11,9 @@ import {
 } from "./constants";
 import {
   createOnePasswordResetSessionRepository,
-  deleteAllPasswordResetSessionsForUserRepository,
   deleteOnePasswordResetSessionRepository,
   findOnePasswordResetSessionWithUserRepository,
 } from "../repositories/password-reset";
-import { transformDbUserToUser } from "./transform";
 
 /**
  * @param {string} token - The token to be used to create the password reset session.
@@ -37,8 +33,9 @@ export async function createPasswordResetSession(token, userId, email) {
       Date.now() + COOKIE_TOKEN_PASSWORD_RESET_EXPIRES_DURATION,
     ),
     code: generateRandomOTP(),
-    emailVerified: false,
-    twoFactorVerified: false,
+    isEmailVerified: false,
+    isTwoFactorVerified: false,
+    createdAt: new Date(),
   };
 
   await createOnePasswordResetSessionRepository(session).then(
@@ -49,8 +46,9 @@ export async function createPasswordResetSession(token, userId, email) {
       email: result.email,
       code: result.code,
       expiresAt: dateLikeToDate(result.expiresAt),
-      emailVerified: !!result.emailVerified,
-      twoFactorVerified: !!result.twoFactorVerified,
+      isEmailVerified: !!result.isEmailVerified,
+      isTwoFactorVerified: !!result.isTwoFactorVerified,
+      createdAt: dateLikeToDate(result.createdAt),
     }),
   );
 
@@ -124,6 +122,10 @@ export function setPasswordResetSessionTokenCookie(
   });
 }
 
+/**
+ * @param {SetCookie} setCookie - The function to set a cookie.
+ * @returns {void}
+ */
 export function deletePasswordResetSessionTokenCookie(setCookie) {
   setCookie(COOKIE_TOKEN_PASSWORD_RESET_KEY, "", {
     maxAge: 0,

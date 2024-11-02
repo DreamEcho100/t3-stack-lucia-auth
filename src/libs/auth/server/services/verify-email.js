@@ -67,7 +67,12 @@ export async function verifyEmailUserService(data, options) {
       statusCode: VERIFY_EMAIL_MESSAGES_ERRORS.NOT_AUTHENTICATED.statusCode,
     };
   }
-  if (user.registered2FA && !session.twoFactorVerified) {
+
+  if (
+    user.isTwoFactorEnabled &&
+    user.is2FARegistered &&
+    !session.isTwoFactorVerified
+  ) {
     return {
       message: "Forbidden",
       messageCode: VERIFY_EMAIL_MESSAGES_ERRORS.FORBIDDEN.code,
@@ -145,7 +150,7 @@ export async function verifyEmailUserService(data, options) {
 
   deleteEmailVerificationRequestCookie(options.setCookie);
 
-  if (!user.registered2FA) {
+  if (user.isTwoFactorEnabled && !user.is2FARegistered) {
     // return redirect("/2fa/setup");
     return {
       message: "Redirecting to 2FA setup",
@@ -154,6 +159,7 @@ export async function verifyEmailUserService(data, options) {
       statusCode: VERIFY_EMAIL_MESSAGES_ERRORS.TWO_FA_NOT_SETUP.statusCode,
     };
   }
+
   return {
     type: "success",
     statusCode: VERIFY_EMAIL_MESSAGES_SUCCESS.EMAIL_VERIFIED.statusCode,

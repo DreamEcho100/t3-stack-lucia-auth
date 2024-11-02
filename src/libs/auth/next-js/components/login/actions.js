@@ -40,6 +40,8 @@ export async function loginAction(_prev, formData) {
       return redirect(AUTH_URLS.VERIFY_EMAIL);
     case LOGIN_MESSAGES_ERRORS.TWO_FA_NOT_SETUP.code:
       return redirect(AUTH_URLS.SETUP_2FA);
+    case LOGIN_MESSAGES_ERRORS.TWO_FA_NOT_NEEDS_VERIFICATION.code:
+      return redirect(AUTH_URLS.TWO_FA);
     default:
       return { type: "error", statusCode: 500, message: "Unexpected error" };
   }

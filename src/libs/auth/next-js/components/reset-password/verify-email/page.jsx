@@ -14,8 +14,8 @@ export default async function AuthPasswordResetEmailVerificationPage() {
   if (session === null) {
     return redirect("/auth/forgot-password");
   }
-  if (session.emailVerified) {
-    if (!session.twoFactorVerified) {
+  if (session.isEmailVerified) {
+    if (!session.isTwoFactorVerified) {
       return redirect("/auth/reset-password/2fa");
     }
     return redirect("/auth/reset-password");

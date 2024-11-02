@@ -15,7 +15,7 @@ import { validatePasswordResetSessionRequest } from "~/libs/auth/server/utils/pa
  */
 export async function verifyPasswordResetEmailAction(_prev, formData) {
   const cookiesManager = cookies();
-  const { session } = await validatePasswordResetSessionRequest(
+  const { session, user } = await validatePasswordResetSessionRequest(
     (name) => cookiesManager.get(name)?.value,
     cookiesManager.set,
   );
@@ -27,7 +27,7 @@ export async function verifyPasswordResetEmailAction(_prev, formData) {
       statusCode: 401,
     };
   }
-  if (session.emailVerified) {
+  if (session.isEmailVerified) {
     return {
       message: "Forbidden",
       // messageCode: "FORBIDDEN",
@@ -78,5 +78,10 @@ export async function verifyPasswordResetEmailAction(_prev, formData) {
       statusCode: 400,
     };
   }
-  return redirect("/auth/reset-password/2fa");
+
+  if (user.isTwoFactorEnabled) {
+    return redirect("/auth/reset-password/2fa");
+  }
+
+  return redirect("/auth/reset-password");
 }

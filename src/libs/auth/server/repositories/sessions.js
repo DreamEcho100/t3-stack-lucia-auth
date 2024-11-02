@@ -18,7 +18,7 @@ export async function createOneSessionRepository(session) {
       data: {
         ...session,
         expiresAt: dateLikeToNumber(session.expiresAt) / 1000,
-        twoFactorVerified: session.twoFactorVerified ? 1 : 0,
+        isTwoFactorVerified: session.isTwoFactorVerified ? 1 : 0,
       },
     })
     .then(transformDbSessionToSession);
@@ -105,7 +105,7 @@ export async function invalidateUserSessionsRepository(userId) {
 export async function setSessionAs2FAVerifiedRepository(sessionId) {
   await db.session.update({
     where: { id: sessionId },
-    data: { twoFactorVerified: 1 },
+    data: { isTwoFactorVerified: 1 },
   });
 }
 
@@ -118,6 +118,6 @@ export async function setSessionAs2FAVerifiedRepository(sessionId) {
 export async function setAllSessionsAsNot2FAVerifiedRepository(userId, tx) {
   await (tx ?? db).session.updateMany({
     where: { userId },
-    data: { twoFactorVerified: 0 },
+    data: { isTwoFactorVerified: 0 },
   });
 }

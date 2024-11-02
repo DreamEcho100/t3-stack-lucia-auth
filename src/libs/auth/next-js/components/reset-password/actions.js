@@ -30,6 +30,7 @@ export async function resetPasswordAction(_prev, formData) {
       (name) => cookiesManager.get(name)?.value,
       cookiesManager.set,
     );
+
   if (passwordResetSession === null) {
     return {
       message: "Not authenticated",
@@ -38,7 +39,7 @@ export async function resetPasswordAction(_prev, formData) {
       statusCode: 401,
     };
   }
-  if (!passwordResetSession.emailVerified) {
+  if (!passwordResetSession.isEmailVerified) {
     return {
       message: "Forbidden",
       // messageCode: "FORBIDDEN",
@@ -46,7 +47,11 @@ export async function resetPasswordAction(_prev, formData) {
       type: "error",
     };
   }
-  if (user.registered2FA && !passwordResetSession.twoFactorVerified) {
+  if (
+    user.isTwoFactorEnabled &&
+    user.is2FARegistered &&
+    !passwordResetSession.isTwoFactorVerified
+  ) {
     return {
       message: "Forbidden",
       // messageCode: "FORBIDDEN",
@@ -86,7 +91,7 @@ export async function resetPasswordAction(_prev, formData) {
 
   const sessionToken = generateSessionToken();
   const session = await createSession(sessionToken, user.id, {
-    twoFactorVerified: passwordResetSession.twoFactorVerified,
+    isTwoFactorVerified: passwordResetSession.isTwoFactorVerified,
   });
 
   setSessionTokenCookie({

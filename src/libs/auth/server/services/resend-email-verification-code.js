@@ -39,7 +39,7 @@ export async function resendEmailVerificationCodeService(options) {
       statusCode: RESEND_EMAIL_MESSAGES_ERRORS.NOT_AUTHENTICATED.statusCode,
     };
   }
-  if (user.registered2FA && !session.twoFactorVerified) {
+  if (user.is2FARegistered && !session.isTwoFactorVerified) {
     return {
       message: "Forbidden",
       messageCode: RESEND_EMAIL_MESSAGES_ERRORS.FORBIDDEN.code,
@@ -55,7 +55,7 @@ export async function resendEmailVerificationCodeService(options) {
   );
 
   if (verificationRequest === null) {
-    if (user.emailVerified) {
+    if (user.isEmailVerified) {
       return {
         message: "Forbidden",
         messageCode: RESEND_EMAIL_MESSAGES_ERRORS.FORBIDDEN.code,

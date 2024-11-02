@@ -1,9 +1,5 @@
 "use server";
 
-// import { RefillingTokenBucket } from "@/lib/server/rate-limit";
-// import { globalPOSTRateLimit } from "@/lib/server/request";
-// import { getCurrentSession, setSessionAs2FAVerified } from "@/lib/server/session";
-// import { updateUserTOTPKey } from "@/lib/server/user";
 import { decodeBase64 } from "@oslojs/encoding";
 import { verifyTOTP } from "@oslojs/otp";
 import { redirect } from "next/navigation";
@@ -50,7 +46,17 @@ export async function setup2FAAction(_prev, formData) {
       statusCode: 401,
     };
   }
-  if (!user.emailVerified) {
+
+  if (!user.isTwoFactorEnabled) {
+    return {
+      message: "Forbidden, 2FA is not enabled",
+      // messageCode: "FORBIDDEN",
+      statusCode: 403,
+      type: "error",
+    };
+  }
+
+  if (!user.isEmailVerified) {
     return {
       message: "Forbidden",
       // messageCode: "FORBIDDEN",
@@ -58,7 +64,7 @@ export async function setup2FAAction(_prev, formData) {
       type: "error",
     };
   }
-  if (user.registered2FA && !session.twoFactorVerified) {
+  if (user.is2FARegistered && !session.isTwoFactorVerified) {
     return {
       message: "Forbidden",
       // messageCode: "FORBIDDEN",

@@ -8,9 +8,10 @@ import { generateRandomRecoveryCode } from "~/libs/auth/server/utils/generate-ra
 import { encrypt } from "~/libs/auth/server/utils/encryption";
 import {
   createUserRepository,
-  resetUserRecoveryCodeRepository,
+  updateOneUserRecoveryCodeRepository,
   updateUserPasswordRepository,
   updateUserTOTPKeyRepository,
+  updateUserTwoFactorEnabledRepository,
 } from "~/libs/auth/server/repositories/users";
 
 /**
@@ -43,11 +44,10 @@ export async function createUser(email, username, password) {
 export async function resetUserRecoveryCode(userId) {
   const recoveryCode = generateRandomRecoveryCode();
   const encryptedCode = encryptString(recoveryCode);
-  const result = await resetUserRecoveryCodeRepository(userId, encryptedCode);
-
-  if (!result) {
-    throw new Error(`User with ID ${userId} not found`);
-  }
+  const result = await updateOneUserRecoveryCodeRepository(
+    userId,
+    encryptedCode,
+  );
 
   return recoveryCode;
 }
@@ -100,4 +100,29 @@ export async function updateUserTOTPKey(userId, key) {
   }
 
   return result;
+}
+
+/**
+ * Update the user's two factor enabled status in the database.
+ * @param {string} userId
+ * @param {boolean} isTwoFactorEnabled
+ * @returns {Promise<User>}
+ */
+export async function updateUserTwoFactorEnabledService(
+  userId,
+  isTwoFactorEnabled,
+) {
+  const encryptedRecoveryCode = isTwoFactorEnabled
+    ? (() => {
+        const recoveryCode = generateRandomRecoveryCode();
+        const encryptedRecoveryCode = encryptString(recoveryCode);
+
+        return encryptedRecoveryCode;
+      })()
+    : null;
+
+  return await updateUserTwoFactorEnabledRepository(
+    { isTwoFactorEnabled, recoveryCode: encryptedRecoveryCode },
+    { userId },
+  );
 }

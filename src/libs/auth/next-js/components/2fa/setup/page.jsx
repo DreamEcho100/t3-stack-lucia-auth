@@ -8,18 +8,19 @@ import { getCurrentSession } from "~/libs/auth/next-js/utils/get-current-session
 
 export default async function AuthTwoFactorSetUpPage() {
   const { session, user } = await getCurrentSession();
+
   if (session === null) {
     return redirect("/auth/login");
   }
-  if (!user.emailVerified) {
+
+  if (!user.isEmailVerified) {
     return redirect("/auth/verify-email");
   }
 
   if (!user.isTwoFactorEnabled) {
     return redirect("/");
   }
-
-  if (user.registered2FA && !session.twoFactorVerified) {
+  if (user.is2FARegistered && !session.isTwoFactorVerified) {
     return redirect("/auth/2fa");
   }
 
