@@ -37,7 +37,7 @@ model User {
 
   passwordHash String @map("password_hash")
 
-  isEmailVerified    Int    @default(0) @map("is_is_email_verified") // Is the email verified
+  isEmailVerified    Int    @default(0) @map("is_email_verified") // Is the email verified
   isTwoFactorEnabled Int    @default(0) @map("is_two_factor_enabled") // Is two-factor authentication enabled
   totpKey            Bytes? @map("totp_key") // TOTP key for two-factor authentication
   recoveryCode       Bytes? @map("recovery_code") // Recovery code for two-factor authentication
